@@ -1,18 +1,40 @@
 const displayedImage = document.querySelector('.displayed-img');
 const thumbBar = document.querySelector('.thumb-bar');
-
 const btn = document.querySelector('button');
 const overlay = document.querySelector('.overlay');
 
-/* Declaring the array of image filenames */
+const imageNames = ['pic1.jpg', 'pic2.jpg', 'pic3.jpg', 'pic4.jpg', 'pic5.jpg'];
+const alternativeTexts = ['x tortuga', 'Dinochickens', 'Cat', 'Minions', 'Yoda'];
 
-/* Declaring the alternative text for each image file */
+function createThumbnail(imageSrc, altText) {
+  const thumbnail = document.createElement('img');
+  thumbnail.setAttribute('src', `images/${imageSrc}`);
+  thumbnail.setAttribute('alt', altText);
+  thumbnail.addEventListener('click', () => setDisplayedImage(`images/${imageSrc}`));
+  return thumbnail;
+}
 
-/* Looping through images */
+function setDisplayedImage(src) {
+  displayedImage.setAttribute('src', src);
+}
 
-const newImage = document.createElement('img');
-newImage.setAttribute('src', xxx);
-newImage.setAttribute('alt', xxx);
-thumbBar.appendChild(newImage);
+function toggleMode() {
+  if (btn.classList.contains('dark')) {
+    setMode('light', 'Modo claro', 'rgba(0, 0, 0, 0.5)');
+  } else {
+    setMode('dark', 'Modo escuro', 'rgba(0, 0, 0, 0)');
+  }
+}
 
-/* Wiring up the Darken/Lighten button */
+function setMode(className, buttonText, backgroundColor) {
+  btn.setAttribute('class', className);
+  btn.textContent = buttonText;
+  overlay.style.backgroundColor = backgroundColor;
+}
+
+for (let i = 0; i < imageNames.length; i++) {
+  const newImage = createThumbnail(imageNames[i], alternativeTexts[i]);
+  thumbBar.appendChild(newImage);
+}
+
+btn.addEventListener('click', toggleMode);
