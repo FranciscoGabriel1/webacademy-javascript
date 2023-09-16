@@ -10,51 +10,30 @@ function random(min, max) {
   return num;
 }
 
-// function to generate random color
-function randomRGB() {
-  return `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`;
-}
-
-
-//modelando a bola
-function Ball(x, y, velX, velY, color, size) {
+// Modelando um quadrado
+function Square(x, y, velX, velY, color, size) {
   this.x = x;
   this.y = y;
   this.velX = velX;
   this.velY = velY;
   this.color = color;
   this.size = size;
+  this.collided = false;
 }
 
-//desenhando a bola
-Ball.prototype.draw = function () {
-  ctx.beginPath();
+// Desenhando um quadrado
+Square.prototype.draw = function () {
   ctx.fillStyle = this.color;
-  ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-  ctx.fill();
+  ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
 };
 
-let testBall = new Ball(50, 100, 4, 4, "blue", 10);
-
-testBall.x;
-testBall.size;
-testBall.color;
-testBall.draw();
-
-Ball.prototype.update = function () {
-  if (this.x + this.size >= width) {
+// Atualizando a posição do quadrado
+Square.prototype.update = function () {
+  if (this.x + this.size / 2 >= width || this.x - this.size / 2 <= 0) {
     this.velX = -this.velX;
   }
 
-  if (this.x - this.size <= 0) {
-    this.velX = -this.velX;
-  }
-
-  if (this.y + this.size >= height) {
-    this.velY = -this.velY;
-  }
-
-  if (this.y - this.size <= 0) {
+  if (this.y + this.size / 2 >= height || this.y - this.size / 2 <= 0) {
     this.velY = -this.velY;
   }
 
@@ -62,43 +41,65 @@ Ball.prototype.update = function () {
   this.y += this.velY;
 };
 
-let balls = [];
-
-while (balls.length < 25) {
-  let size = random(10, 20);
-  let ball = new Ball(
-    // ball position always drawn at least one ball width
-    // away from the edge of the canvas, to avoid drawing errors
-    random(0 + size, width - size),
-    random(0 + size, height - size),
-    random(-3, 3),//velocidade que bolinhas se movimentam na tela
-    random(-3, 3),
-    "rgb(" +
-      random(0, 255) +
-      "," +
-      random(0, 255) +
-      "," +
-      random(0, 255) +
-      ")",
-    size,
+// Função para detectar colisão entre dois quadrados
+function isColliding(square1, square2) {
+  return (
+    square1.x - square1.size / 2 < square2.x + square2.size / 2 &&
+    square1.x + square1.size / 2 > square2.x - square2.size / 2 &&
+    square1.y - square1.size / 2 < square2.y + square2.size / 2 &&
+    square1.y + square1.size / 2 > square2.y - square2.size / 2
   );
-
-  balls.push(ball);
 }
 
+let squares = [];
+
+while (squares.length < 25) {
+  let size = random(10, 30);
+  let square = new Square(
+    random(size, width - size),
+    random(size, height - size),
+    random(-3, 3),
+    random(-3, 3),
+    `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`,
+    size
+  );
+
+  let collides = false;
+  for (let i = 0; i < squares.length; i++) {
+    if (isColliding(square, squares[i])) {
+      collides = true;
+      break;
+    }
+  }
+
+  if (!collides) {
+    squares.push(square);
+  }
+}
 
 function loop() {
   ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
   ctx.fillRect(0, 0, width, height);
 
-  for (let i = 0; i < balls.length; i++) {
-    balls[i].draw();
-    balls[i].update();
+  for (let i = 0; i < squares.length; i++) {
+    if (squares[i].collided) {
+      squares[i].color = `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`;
+    }
+    squares[i].draw();
+    squares[i].update();
+    squares[i].collided = false;
+  }
+
+  for (let i = 0; i < squares.length; i++) {
+    for (let j = i + 1; j < squares.length; j++) {
+      if (isColliding(squares[i], squares[j])) {
+        squares[i].collided = true;
+        squares[j].collided = true;
+      }
+    }
   }
 
   requestAnimationFrame(loop);
 }
 
 loop();
-
-
